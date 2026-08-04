@@ -532,7 +532,10 @@ input{ font-family: inherit; }
 .brief-card__row strong{ color: var(--text); }
 
 /* ---------- REVEAL screen ---------- */
-.screen--dark{ background: var(--bg); }
+.screen--dark {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
 .reveal{
   flex: 1;
   position: relative;
@@ -704,15 +707,15 @@ input{ font-family: inherit; }
 }
 
 /* ---------- Result screen ---------- */
-.result{
-  flex: 1;
-  padding: 28px 22px 40px; /* Spazio extra in fondo per non attaccare i bottoni */
+.result {
+  flex: 1 0 auto; /* Permette al blocco di espandersi in altezza anziché bloccarsi */
+  padding: 28px 22px 60px; /* 60px in basso lasciano spazio per vedere l'ultimo elemento e i tasti */
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   position: relative;
-  overflow: visible; /* <--- CAMBIA hidden IN visible */
+  overflow: visible !important; /* Non taglia più la lista dei voti */
   width: 100%;
 }
 .result__confetti{ position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
