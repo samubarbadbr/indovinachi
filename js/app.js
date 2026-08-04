@@ -610,19 +610,18 @@
     });
   }
 
-  /* ---------------- Prevenzione Zoom iOS / Mobile ---------------- */
-  let lastTouchEnd = 0;
-  document.addEventListener('touchend', (e) => {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
-      e.preventDefault();
-    }
-    lastTouchEnd = now;
-  }, { passive: false });
-
+/* ---------------- Prevenzione Zoom iOS / Safari ---------------- */
+  // Disabilita lo zoom pinch-to-zoom (due dita) su Safari
   document.addEventListener('gesturestart', (e) => {
     e.preventDefault();
-  });
+  }, { passive: false });
+
+  // Previene lo zoom da doppio tap su Safari iOS SENZA bloccare i click rapidi
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) {
+      e.preventDefault(); // Blocca lo zoom se si usano più dita contemporaneamente
+    }
+  }, { passive: false });
   /* ---------------- Inizializzazione ---------------- */
 
   loadTheme();

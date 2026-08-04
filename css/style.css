@@ -924,4 +924,16 @@ input{ font-family: inherit; }
 @media (min-width: 560px){
   #app{ max-width: 480px; margin: 0 auto; box-shadow: 0 0 60px rgba(0,0,0,.6); }
   body{ background: #05070a; }
+
+  /* Elimina lo zoom da doppio tap su iOS e rimuove il ritardo dei 300ms */
+html, body, button, input, .btn, .iconbtn, .chip, .suspect-btn, .counter__btn {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Evita il rimbalzo/zoom visivo durante i tocchi rapidi su Safari */
+button, .btn, .iconbtn, .suspect-btn {
+  -webkit-tap-highlight-color: transparent;
+}
 }
