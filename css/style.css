@@ -77,11 +77,12 @@ body{
   user-select: none;
 }
 
-#app{
+#app {
   position: fixed;
   inset: 0;
-  overflow-y: auto; /* <--- Permette lo scorrimento se necessario */
-  -webkit-overflow-scrolling: touch; /* Rende lo scroll fluido su iPhone/iOS */
+  overflow-x: hidden; /* Blocca il movimento destra/sinistra */
+  overflow-y: auto;   /* Attiva SOLO lo scroll alto/basso */
+  -webkit-overflow-scrolling: touch;
   background:
     radial-gradient(120% 90% at 50% -10%, rgba(201,162,39,.06), transparent 55%),
     var(--bg);
@@ -93,20 +94,20 @@ input{ font-family: inherit; }
 ::selection{ background: var(--brass); color: #14181f; }
 
 /* ---------- Screens ---------- */
-.screen{
+.screen {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Dispone gli elementi dall'alto verso il basso */
   padding-top: var(--safe-top);
   padding-bottom: var(--safe-bottom);
   opacity: 0;
   transform: translateX(24px) scale(.99);
   pointer-events: none;
   transition: opacity .32s cubic-bezier(.4,0,.2,1), transform .32s cubic-bezier(.4,0,.2,1);
-  overflow-y: auto; /* Mantieni questo */
-  -webkit-overflow-scrolling: touch; /* Add questo per fluidità su Safari */
-  overflow-x: hidden;
+  overflow-x: hidden; /* Impedisce lo scroll orizzontale */
+  overflow-y: auto;   /* Permette lo scroll verticale */
+  -webkit-overflow-scrolling: touch;
 }
 .screen.is-active{
   opacity: 1;
@@ -117,12 +118,13 @@ input{ font-family: inherit; }
   transform: translateX(-24px) scale(.99);
 }
 
-.screen__body{
+.screen__body {
   flex: 1;
   padding: 8px 24px 24px;
   display: flex;
-  flex-direction: column;
-  min-height: min-content; /* Add questo: permette al contenitore di allungarsi se ci sono molti giocatori/bottoni */
+  flex-direction: column; /* Tieni questo su column, NON su row! */
+  width: 100%;
+  box-sizing: border-box;
 }
 .screen__body--center{
   align-items: center;
