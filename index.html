@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0B0F14">
+<meta name="description" content="Indovina chi l'è L'INTRUSO">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Chi è l'Intruso">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>Indovina chi è l'intruso</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ HOME ============ -->
+  <section class="screen screen--home is-active" data-screen="home">
+    <div class="home__top">
+      <div class="stamp-badge" aria-hidden="true">
+        <svg viewBox="0 0 64 64" class="stamp-badge__icon">
+          <circle cx="27" cy="27" r="17" fill="none" stroke="currentColor" stroke-width="4.5"/>
+          <line x1="39.5" y1="39.5" x2="53" y2="53" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+          <text x="27" y="34" text-anchor="middle" font-family="Courier New, monospace" font-weight="700" font-size="22" fill="currentColor">?</text>
+        </svg>
+      </div>
+      <h1 class="home__title">Indovina chi l'è<br><span>L'INTRUSO</span></h1>
+      <p class="home__subtitle"></p>
+    </div>
+
+    <nav class="home__menu">
+      <button class="btn btn--primary" data-nav="setup-players">
+        <span class="btn__label">Nuova partita</span>
+        <span class="btn__hint">Crea una missione</span>
+      </button>
+      <button class="btn btn--secondary" data-nav="rules">
+        <span class="btn__label">Regole</span>
+        <span class="btn__hint">Come si gioca</span>
+      </button>
+      <button class="btn btn--secondary" data-nav="stats">
+        <span class="btn__label">Statistiche</span>
+        <span class="btn__hint">Il tuo dossier</span>
+      </button>
+      <button class="btn btn--secondary" data-nav="theme">
+        <span class="btn__label">Tema</span>
+        <span class="btn__hint">Cambia colore</span>
+      </button>
+    </nav>
+
+    <button class="fullscreen-toggle" id="fullscreenToggle" title="Schermo intero" aria-label="Attiva schermo intero">
+      <svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </section>
+
+  <!-- ============ SETUP: NUMERO GIOCATORI ============ -->
+  <section class="screen" data-screen="setup-players">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="home" aria-label="Torna alla home">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="topbar__title">Nuova missione</span>
+      <span class="topbar__step">1 / 3</span>
+    </header>
+
+    <div class="screen__body">
+      <h2 class="section-title">Quanti agenti sul campo?</h2>
+      <p class="section-desc">Servono almeno 3 giocatori. Il telefono passerà di mano in mano.</p>
+
+      <div class="counter">
+        <button class="counter__btn" id="playersMinus" aria-label="Diminuisci giocatori">−</button>
+        <div class="counter__value" id="playersValue">6</div>
+        <button class="counter__btn" id="playersPlus" aria-label="Aumenta giocatori">+</button>
+      </div>
+      <input type="range" id="playersSlider" min="3" max="20" value="6" step="1" class="slider">
+      <div class="slider__scale"><span>3</span><span>20</span></div>
+
+      <div class="names-list" id="namesList"></div>
+    </div>
+
+    <div class="screen__footer">
+      <button class="btn btn--primary btn--wide" data-nav="setup-roles">Continua</button>
+    </div>
+  </section>
+
+  <!-- ============ SETUP: RUOLI ============ -->
+  <section class="screen" data-screen="setup-roles">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="setup-players" aria-label="Indietro">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="topbar__title">Nuova missione</span>
+      <span class="topbar__step">2 / 3</span>
+    </header>
+
+    <div class="screen__body">
+      <h2 class="section-title">Quanti infiltrati?</h2>
+      <p class="section-desc">Consigliato: circa 1 infiltrato ogni 4 giocatori.</p>
+
+      <div class="counter">
+        <button class="counter__btn" id="spiesMinus" aria-label="Diminuisci infiltrati">−</button>
+        <div class="counter__value" id="spiesValue">1</div>
+        <button class="counter__btn" id="spiesPlus" aria-label="Aumenta infiltrati">+</button>
+      </div>
+      <p class="hint-text" id="spiesHint">1 infiltrato su 6 giocatori</p>
+
+      <div class="toggle-row">
+        <div class="toggle-row__text">
+          <strong>Il jolly (indizio libero)</strong>
+          <span>Un giocatore in più non conosce la parola ma non è l'infiltrato: riceve solo la categoria.</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="jollyToggle">
+          <span class="switch__track"><span class="switch__thumb"></span></span>
+        </label>
+      </div>
+
+      <h2 class="section-title section-title--mt">Categorie</h2>
+      <p class="section-desc">Scegli da quali categorie pescare la parola segreta. Nessuna selezione = tutte.</p>
+      <div class="chip-grid" id="categoryChips"></div>
+    </div>
+
+    <div class="screen__footer">
+      <button class="btn btn--primary btn--wide" data-nav="setup-timer">Continua</button>
+    </div>
+  </section>
+
+  <!-- ============ SETUP: TIMER ============ -->
+  <section class="screen" data-screen="setup-timer">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="setup-roles" aria-label="Indietro">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="topbar__title">Nuova missione</span>
+      <span class="topbar__step">3 / 3</span>
+    </header>
+
+    <div class="screen__body">
+      <h2 class="section-title">Timer di discussione</h2>
+      <p class="section-desc">Facoltativo: un conto alla rovescia per la fase di discussione.</p>
+
+      <div class="chip-grid chip-grid--timer" id="timerChips">
+        <button class="chip" data-timer="0">No timer</button>
+        <button class="chip" data-timer="30">30s</button>
+        <button class="chip" data-timer="60">60s</button>
+        <button class="chip" data-timer="120">120s</button>
+      </div>
+
+      <div class="brief-card">
+        <div class="brief-card__row"><span>Giocatori</span><strong id="briefPlayers">—</strong></div>
+        <div class="brief-card__row"><span>Infiltrati</span><strong id="briefSpies">—</strong></div>
+        <div class="brief-card__row"><span>Categorie</span><strong id="briefCategories">—</strong></div>
+      </div>
+    </div>
+
+    <div class="screen__footer">
+      <button class="btn btn--primary btn--wide" id="startGameBtn">Avvia la missione</button>
+    </div>
+  </section>
+
+  <!-- ============ DISTRIBUZIONE RUOLI ============ -->
+  <section class="screen screen--dark" data-screen="reveal">
+    <div class="reveal">
+      <div class="reveal__pass" id="passCard">
+        <div class="pass__index" id="passIndex">Agente 1 di 6</div>
+        <h2 class="pass__title">Passa il telefono a</h2>
+        <div class="pass__name" id="passName">Giocatore 1</div>
+        <p class="pass__warn">Assicurati che gli altri non guardino lo schermo.</p>
+        <button class="btn btn--primary btn--wide" id="revealBtn">Tocca per vedere il ruolo</button>
+      </div>
+
+      <div class="reveal__card" id="roleCard">
+        <div class="dossier" id="dossier">
+          <div class="dossier__stamp-wrap"><div class="dossier__stamp" id="dossierStamp">TOP SECRET</div></div>
+          <div class="dossier__label" id="roleLabel">CIVILE</div>
+          <div class="dossier__word" id="roleWord">PIZZA</div>
+          <div class="dossier__note" id="roleNote">Descrivi la parola senza dirla. Trova l'infiltrato.</div>
+        </div>
+        <button class="btn btn--secondary btn--wide" id="hideRoleBtn">Ho memorizzato, nascondi</button>
+      </div>
+    </div>
+
+    <div class="screen__footer" id="revealFooter" style="display:none;">
+      <button class="btn btn--primary btn--wide" id="goToDiscussionBtn">Tutti hanno visto il ruolo → Inizia discussione</button>
+    </div>
+  </section>
+
+  <!-- ============ DISCUSSIONE ============ -->
+  <section class="screen" data-screen="discussion">
+    <header class="topbar">
+      <span class="topbar__spacer"></span>
+      <span class="topbar__title">Discussione</span>
+      <span class="topbar__spacer"></span>
+    </header>
+
+    <div class="screen__body screen__body--center">
+      <p class="section-desc section-desc--center">Ogni giocatore descrive la parola con una sola parola o una breve frase. Chi non conosce la parola bluffa.</p>
+
+      <div class="timer-ring" id="timerRing">
+        <svg viewBox="0 0 200 200" class="timer-ring__svg">
+          <circle cx="100" cy="100" r="90" class="timer-ring__bg"/>
+          <circle cx="100" cy="100" r="90" class="timer-ring__fg" id="timerCircle"/>
+        </svg>
+        <div class="timer-ring__value" id="timerValue">60</div>
+      </div>
+
+      <div class="timer-controls" id="timerControls">
+        <button class="iconbtn iconbtn--lg" id="timerPlayPause" aria-label="Avvia/Pausa timer">
+          <svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+        </button>
+        <button class="iconbtn iconbtn--lg" id="timerReset" aria-label="Reimposta timer">
+          <svg viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 13a8 8 0 1 0 2-8L4 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="screen__footer">
+      <button class="btn btn--primary btn--wide" data-nav="vote-setup">Si vota</button>
+    </div>
+  </section>
+
+  <!-- ============ VOTAZIONE: CHI VOTA ============ -->
+  <section class="screen" data-screen="vote-setup">
+    <header class="topbar">
+      <span class="topbar__spacer"></span>
+      <span class="topbar__title">Votazione</span>
+      <span class="topbar__spacer"></span>
+    </header>
+    <div class="screen__body">
+      <h2 class="section-title" id="voterPrompt">Passa il telefono a Giocatore 1</h2>
+      <p class="section-desc">Tocca chi sospetti sia l'infiltrato. Il tuo voto resterà segreto agli altri.</p>
+      <div class="suspect-grid" id="suspectGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ RIVELAZIONE ============ -->
+  <section class="screen" data-screen="result">
+    <div class="result">
+      <div class="result__confetti" id="confettiLayer" aria-hidden="true"></div>
+      <div class="result__badge" id="resultBadge">MISSIONE COMPIUTA</div>
+      <h2 class="result__headline" id="resultHeadline">I civili hanno vinto</h2>
+
+      <div class="result__word-card">
+        <span class="result__word-label">La parola dei civili era</span>
+        <span class="result__word" id="resultWord">PIZZA</span>
+      </div>
+
+      <div class="result__word-card result__word-card--spy">
+        <span class="result__word-label">La parola dell'infiltrato era</span>
+        <span class="result__word result__word--spy" id="resultUndercoverWord">FOCACCIA</span>
+      </div>
+
+      <div class="result__section">
+        <h3>Voti ricevuti</h3>
+        <div class="vote-tally" id="voteTally"></div>
+      </div>
+
+      <div class="result__section">
+        <h3>Fascicolo completo</h3>
+        <div class="role-reveal-list" id="roleRevealList"></div>
+      </div>
+    </div>
+
+    <div class="screen__footer screen__footer--split">
+      <button class="btn btn--secondary btn--wide" data-nav="home">Menu</button>
+      <button class="btn btn--primary btn--wide" id="playAgainBtn">Rigioca</button>
+    </div>
+  </section>
+
+  <!-- ============ REGOLE ============ -->
+  <section class="screen" data-screen="rules">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="home" aria-label="Torna alla home">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="topbar__title">Regole</span>
+      <span class="topbar__spacer"></span>
+    </header>
+    <div class="screen__body rules-body">
+      <div class="rule-block">
+        <span class="rule-block__num">01</span>
+        <div>
+          <h3>La parola segreta</h3>
+          <p>Prima di iniziare, l'app sceglie una coppia di parole simili tra loro (es. <em>Pane</em> / <em>Impasto</em>). Quasi tutti i giocatori — i <strong>civili</strong> — ricevono la prima parola. Uno o più giocatori sono <strong>infiltrati</strong>: ricevono la parola simile ma diversa, e devono capire qual è la parola esatta dei civili origliando la discussione, senza farsi scoprire.</p>
+        </div>
+      </div>
+      <div class="rule-block">
+        <span class="rule-block__num">02</span>
+        <div>
+          <h3>Distribuzione dei ruoli</h3>
+          <p>Il telefono passa di mano in mano. Ogni giocatore, quando è il suo turno, tocca lo schermo per vedere in privato il proprio ruolo, poi lo nasconde e passa il telefono al successivo. Gli altri non devono guardare.</p>
+        </div>
+      </div>
+      <div class="rule-block">
+        <span class="rule-block__num">03</span>
+        <div>
+          <h3>Discussione</h3>
+          <p>A turno, ogni giocatore dice una sola parola o una breve frase che descrive la parola segreta — senza mai dirla. I civili cercano di dare indizi chiari ma non troppo scoperti. Gli infiltrati bluffano, cercando di restare mimetizzati.</p>
+        </div>
+      </div>
+      <div class="rule-block">
+        <span class="rule-block__num">04</span>
+        <div>
+          <h3>Votazione</h3>
+          <p>Dopo la discussione, ogni giocatore vota in segreto chi sospetta essere l'infiltrato. Chi riceve più voti viene smascherato.</p>
+        </div>
+      </div>
+      <div class="rule-block">
+        <span class="rule-block__num">05</span>
+        <div>
+          <h3>Vittoria</h3>
+          <p>Se il sospettato con più voti è davvero l'infiltrato, <strong>vincono i civili</strong>. Se il giocatore eliminato era un civile innocente, <strong>vince l'infiltrato</strong>, che è riuscito a confondere il gruppo.</p>
+        </div>
+      </div>
+      <div class="rule-block">
+        <span class="rule-block__num">+</span>
+        <div>
+          <h3>Variante: il jolly</h3>
+          <p>Attivando il jolly, un giocatore in più non riceve la parola ma sa a quale categoria appartiene. Non è un infiltrato: deve solo evitare di farsi scoprire mentre bluffa in modo più informato.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STATISTICHE ============ -->
+  <section class="screen" data-screen="stats">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="home" aria-label="Torna alla home">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="topbar__title">Statistiche</span>
+      <span class="topbar__spacer"></span>
+    </header>
+    <div class="screen__body">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-card__value" id="statGames">0</span>
+          <span class="stat-card__label">Partite giocate</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__value" id="statSpyWins">0</span>
+          <span class="stat-card__label">Vittorie infiltrati</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__value" id="statCivilianWins">0</span>
+          <span class="stat-card__label">Vittorie civili</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__value" id="statFavRole">—</span>
+          <span class="stat-card__label">Ruolo più assegnato</span>
+        </div>
+      </div>
+
+      <div class="stats-bar-block">
+        <div class="stats-bar-block__row">
+          <span>Civili</span>
+          <div class="stats-bar"><div class="stats-bar__fill stats-bar__fill--civ" id="civBar"></div></div>
+        </div>
+        <div class="stats-bar-block__row">
+          <span>Infiltrati</span>
+          <div class="stats-bar"><div class="stats-bar__fill stats-bar__fill--spy" id="spyBar"></div></div>
+        </div>
+      </div>
+
+      <button class="btn btn--ghost btn--wide" id="resetStatsBtn">Azzera statistiche</button>
+    </div>
+  </section>
+
+  <!-- ============ TEMA ============ -->
+  <section class="screen" data-screen="theme">
+    <header class="topbar">
+      <button class="iconbtn" data-nav="home" aria-label="Torna alla home">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <span class="topbar__title">Tema</span>
+      <span class="topbar__spacer"></span>
+    </header>
+    <div class="screen__body">
+      <h2 class="section-title">Scegli i colori</h2>
+      <p class="section-desc">Il colore d'accento cambia in tutta l'app. Rosso (infiltrato) e verde (vittoria civili) restano sempre riconoscibili.</p>
+
+      <div class="theme-grid" id="themeGrid">
+        <button class="theme-swatch" data-theme="brass">
+          <span class="theme-swatch__dot theme-swatch__dot--brass"></span>
+          <span>Ottone</span>
+        </button>
+        <button class="theme-swatch" data-theme="sapphire">
+          <span class="theme-swatch__dot theme-swatch__dot--sapphire"></span>
+          <span>Zaffiro</span>
+        </button>
+        <button class="theme-swatch" data-theme="amethyst">
+          <span class="theme-swatch__dot theme-swatch__dot--amethyst"></span>
+          <span>Ametista</span>
+        </button>
+        <button class="theme-swatch" data-theme="teal">
+          <span class="theme-swatch__dot theme-swatch__dot--teal"></span>
+          <span>Smeraldo</span>
+        </button>
+        <button class="theme-swatch" data-theme="rose">
+          <span class="theme-swatch__dot theme-swatch__dot--rose"></span>
+          <span>Corallo</span>
+        </button>
+        <button class="theme-swatch" data-theme="silver">
+          <span class="theme-swatch__dot theme-swatch__dot--silver"></span>
+          <span>Argento</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/words.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
