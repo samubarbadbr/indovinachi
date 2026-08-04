@@ -80,7 +80,8 @@ body{
 #app{
   position: fixed;
   inset: 0;
-  overflow: hidden;
+  overflow-y: auto; /* <--- Permette lo scorrimento se necessario */
+  -webkit-overflow-scrolling: touch; /* Rende lo scroll fluido su iPhone/iOS */
   background:
     radial-gradient(120% 90% at 50% -10%, rgba(201,162,39,.06), transparent 55%),
     var(--bg);
@@ -103,7 +104,8 @@ input{ font-family: inherit; }
   transform: translateX(24px) scale(.99);
   pointer-events: none;
   transition: opacity .32s cubic-bezier(.4,0,.2,1), transform .32s cubic-bezier(.4,0,.2,1);
-  overflow-y: auto;
+  overflow-y: auto; /* Mantieni questo */
+  -webkit-overflow-scrolling: touch; /* Add questo per fluidità su Safari */
   overflow-x: hidden;
 }
 .screen.is-active{
@@ -120,6 +122,7 @@ input{ font-family: inherit; }
   padding: 8px 24px 24px;
   display: flex;
   flex-direction: column;
+  min-height: min-content; /* Add questo: permette al contenitore di allungarsi se ci sono molti giocatori/bottoni */
 }
 .screen__body--center{
   align-items: center;
@@ -659,6 +662,7 @@ input{ font-family: inherit; }
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+  padding-bottom: 20px; /* <--- Aggiungi un minimo di spazio in fondo per non far tagliare l'ultimo bottone */
 }
 .suspect-btn{
   border: 1px solid var(--line);
