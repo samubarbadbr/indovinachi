@@ -1,5 +1,5 @@
 /* =========================================================
-   SECRET AGENT — Design System
+   Indovia chi l'è l'intruso — Design System
    Palette: dossier notturno con timbro di ceralacca
    ========================================================= */
 
@@ -66,6 +66,7 @@ html, body{
   margin: 0;
   overscroll-behavior: none;
   overflow-x: hidden;
+  touch-action: manipulation;
 }
 
 body{
