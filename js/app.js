@@ -295,8 +295,21 @@
 
   const RING_CIRC = 2 * Math.PI * 90; // 565.48
 
+  // Sceglie chi parla per primo. Non è mai un infiltrato: se dovesse
+  // aprire lui la discussione, non avendo nessun indizio in mano
+  // rischierebbe di esitare e tradirsi subito.
+  function pickStarter() {
+    const g = state.game;
+    const eligible = g.roles.filter(p => p.role !== 'spy');
+    const pool = eligible.length ? eligible : g.roles; // fallback di sicurezza, non dovrebbe mai servire
+    const starter = pool[Math.floor(Math.random() * pool.length)];
+    g.starterName = starter.name;
+    $('#starterName').textContent = starter.name;
+  }
+
   function setupDiscussionScreen() {
     const g = state.game;
+    pickStarter();
     g.timer.duration = state.timerDuration;
     g.timer.remaining = state.timerDuration;
     g.timer.running = false;

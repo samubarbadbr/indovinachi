@@ -184,3 +184,7 @@ si possono filtrare nel setup; se nessuna è selezionata, si pesca da tutte.
 - **Nuovo logo**: lente d'ingrandimento con punto interrogativo, al posto
   del timbro con segno di spunta.
 - **Aggiunto il sistema di temi colore** (6 palette, sezione "Tema" dalla home).
+- **Aggiunto l'apripista della discussione**: all'inizio della fase di
+  discussione l'app indica chi parla per primo, scelto a caso **escludendo
+  sempre gli infiltrati** — altrimenti chi apre senza avere alcun indizio si
+  tradirebbe subito.

@@ -2,7 +2,7 @@
 // Cache "app shell": una volta aperta la prima volta, il gioco funziona
 // completamente offline, senza alcuna connessione a Internet.
 
-const CACHE_NAME = 'secret-agent-cache-v2';
+const CACHE_NAME = 'secret-agent-cache-v3';
 
 const ASSETS = [
   './',
