@@ -122,7 +122,7 @@ variabili.
 secret-agent/
 ├── index.html          Tutte le schermate dell'app (SPA a sezioni)
 ├── manifest.json        Configurazione PWA (nome, icone, colori, standalone)
-├── sw.js                Service worker: cache offline dell'app shell (v2)
+├── sw.js                Service worker: cache offline dell'app shell (v4)
 ├── css/
 │   └── style.css        Design system, temi colore, stili di tutte le schermate
 ├── js/
@@ -188,3 +188,16 @@ si possono filtrare nel setup; se nessuna è selezionata, si pesca da tutte.
   discussione l'app indica chi parla per primo, scelto a caso **escludendo
   sempre gli infiltrati** — altrimenti chi apre senza avere alcun indizio si
   tradirebbe subito.
+- **Semplificata la schermata finale**: rimosso il verdetto automatico
+  ("Missione compiuta" / "Copertura riuscita" e la frase su chi ha vinto),
+  che poteva risultare fuorviante nelle partite con più infiltrati. Restano
+  ben visibili la parola dei civili, quella dell'infiltrato, i voti e il
+  fascicolo completo dei ruoli: il gruppo tira le conclusioni da sé.
+- **Rimosso il pulsante schermo intero** dalla home (pensato per l'uso da
+  browser desktop, non necessario giocando da telefono).
+- **Footer sempre visibile senza scroll**: nelle schermate con pulsanti in
+  fondo (in particolare la schermata finale con Rigioca/Menu), il contenuto
+  scorre internamente ma i pulsanti restano sempre a portata di pollice.
+- **Aggiunto un vero tema chiaro** ("Chiaro" nella schermata Tema): a
+  differenza degli altri accenti, cambia anche sfondo e superfici, non solo
+  il colore. Il tema scuro resta quello di default.

@@ -445,28 +445,14 @@
     const eliminated = g.roles.find(p => p.name === topName);
     const civiliansWin = !eliminated || eliminated.role !== 'spy';
 
-    renderResult(eliminated, civiliansWin);
+    renderResult(eliminated);
     recordStats(g, civiliansWin);
     showScreen('result');
     launchConfetti();
   }
 
-  function renderResult(eliminated, civiliansWin) {
+  function renderResult(eliminated) {
     const g = state.game;
-    const badge = $('#resultBadge');
-    const headline = $('#resultHeadline');
-
-    if (civiliansWin) {
-      badge.textContent = 'MISSIONE COMPIUTA';
-      headline.textContent = eliminated
-        ? `${eliminated.name} era l'infiltrato: i civili vincono!`
-        : 'I civili vincono!';
-    } else {
-      badge.textContent = 'COPERTURA RIUSCITA';
-      headline.textContent = eliminated
-        ? `${eliminated.name} era innocente: l'infiltrato vince!`
-        : "L'infiltrato vince!";
-    }
 
     $('#resultWord').textContent = g.word;
     $('#resultUndercoverWord').textContent = g.undercoverWord;
@@ -590,16 +576,6 @@
       try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* storage non disponibile */ }
       vibrate(20);
     });
-  });
-
-  /* ---------------- Schermo intero ---------------- */
-
-  $('#fullscreenToggle').addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
-    } else {
-      document.exitFullscreen?.();
-    }
   });
 
   /* ---------------- Registrazione Service Worker (PWA offline) ---------------- */

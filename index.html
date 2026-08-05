@@ -8,10 +8,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Chi è l'Intruso">
-<!-- Dice a Safari iOS di avviare il sito come app nativa a schermo intero -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Secret Agent">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" href="icons/icon-192.png">
@@ -54,10 +50,6 @@
         <span class="btn__hint">Cambia colore</span>
       </button>
     </nav>
-
-    <button class="fullscreen-toggle" id="fullscreenToggle" title="Schermo intero" aria-label="Attiva schermo intero">
-      <svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
   </section>
 
   <!-- ============ SETUP: NUMERO GIOCATORI ============ -->
@@ -246,6 +238,14 @@
   </section>
 
   <!-- ============ RIVELAZIONE ============ -->
+  <section class="screen" data-screen="result">
+    <div class="result">
+      <div class="result__confetti" id="confettiLayer" aria-hidden="true"></div>
+
+      <div class="result__word-card">
+        <span class="result__word-label">La parola dei civili era</span>
+        <span class="result__word" id="resultWord">PIZZA</span>
+      </div>
 
       <div class="result__word-card result__word-card--spy">
         <span class="result__word-label">La parola dell'infiltrato era</span>
@@ -379,7 +379,7 @@
     </header>
     <div class="screen__body">
       <h2 class="section-title">Scegli i colori</h2>
-      <p class="section-desc">Il colore d'accento cambia in tutta l'app. Rosso (infiltrato) e verde (vittoria civili) restano sempre riconoscibili.</p>
+      <p class="section-desc">Scegli un accento per il tema scuro, oppure passa al tema chiaro. Rosso (infiltrato) e verde (vittoria civili) restano sempre riconoscibili.</p>
 
       <div class="theme-grid" id="themeGrid">
         <button class="theme-swatch" data-theme="brass">
@@ -405,6 +405,10 @@
         <button class="theme-swatch" data-theme="silver">
           <span class="theme-swatch__dot theme-swatch__dot--silver"></span>
           <span>Argento</span>
+        </button>
+        <button class="theme-swatch" data-theme="light">
+          <span class="theme-swatch__dot theme-swatch__dot--light"></span>
+          <span>Chiaro</span>
         </button>
       </div>
     </div>
