@@ -280,7 +280,12 @@ input{ font-family: inherit; }
   display: flex;
   flex-direction: column;
   gap: 2px;
-  transition: transform .12s, filter .15s, background .15s;
+  transition: transform .12s, filter .15s, background .15s, opacity .15s;
+}
+.btn:disabled{
+  opacity: .4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 .btn:active{ transform: scale(.97); }
 .btn__label{ font-size: 16px; }
@@ -499,6 +504,31 @@ input{ font-family: inherit; }
 .switch input:checked + .switch__track .switch__thumb{ transform: translateX(20px); background: var(--brass); }
 
 /* ---------- Chips ---------- */
+.category-actions{
+  display: flex;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+.link-btn{
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--brass-bright);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link-btn:active{ opacity: .7; }
+
+.category-count{
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: var(--text-faint);
+  text-align: center;
+}
+
 .chip-grid{
   display: flex;
   flex-wrap: wrap;
@@ -553,7 +583,7 @@ input{ font-family: inherit; }
   justify-content: center;
   padding: 24px;
 }
-.reveal__pass, .reveal__card{
+.reveal__single{
   width: 100%;
   max-width: 380px;
   display: flex;
@@ -562,7 +592,6 @@ input{ font-family: inherit; }
   text-align: center;
   gap: 16px;
 }
-.reveal__card{ display: none; }
 
 .pass__index{
   font-family: var(--font-display);
@@ -586,20 +615,38 @@ input{ font-family: inherit; }
 .pass__warn{
   color: var(--text-faint);
   font-size: 13px;
-  max-width: 280px;
-  margin: 0 0 12px;
+  max-width: 300px;
+  margin: 0 0 4px;
 }
 
+/* Dossier "tieni premuto": due stati sovrapposti (nascosto/rivelato),
+   con un leggero effetto flip alla pressione. Il contenuto reale del
+   ruolo esiste sempre nel DOM (nessun ritardo alla pressione), solo la
+   visibilità cambia — così la copertura è istantanea al rilascio. */
 .dossier{
   width: 100%;
+  min-height: 220px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: 36px 26px 30px;
+  padding: 30px 26px;
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-2);
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .18s ease, box-shadow .18s ease;
   animation: dossier-in .45s cubic-bezier(.2,.9,.3,1.2) both;
+}
+.dossier:active{ transform: scale(.98); }
+.dossier:focus-visible{
+  outline: 2px solid var(--brass-bright);
+  outline-offset: 3px;
 }
 @keyframes dossier-in{
   0%{ transform: scale(.86) rotate(-2deg); opacity: 0; }
@@ -611,6 +658,55 @@ input{ font-family: inherit; }
   background: repeating-linear-gradient(135deg, rgba(255,255,255,.015) 0 2px, transparent 2px 5px);
   pointer-events: none;
 }
+
+.dossier__hidden-state{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-faint);
+  transition: opacity .15s ease;
+}
+.dossier__hidden-icon{
+  width: 40px; height: 40px;
+  color: var(--brass);
+  opacity: .8;
+  animation: hidden-pulse 2.4s ease-in-out infinite;
+}
+@keyframes hidden-pulse{
+  0%, 100%{ opacity: .5; }
+  50%{ opacity: .95; }
+}
+.dossier__hidden-state span{
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: .12em;
+}
+
+.dossier__content{
+  width: 100%;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transform: rotateX(90deg);
+  transition: transform .22s cubic-bezier(.2,.8,.3,1);
+}
+
+/* Stato rivelato: mostra il contenuto con un piccolo "flip", nasconde il
+   placeholder. Attivato/disattivato via JS con i Pointer Events. */
+.dossier.is-revealed .dossier__hidden-state{
+  display: none;
+}
+.dossier.is-revealed .dossier__content{
+  display: flex;
+  transform: rotateX(0deg);
+}
+.dossier.is-revealed{
+  border-color: var(--brass);
+  box-shadow: var(--shadow-2), 0 0 0 1px var(--brass), 0 0 24px rgba(201,162,39,.25);
+}
+
 .dossier__stamp-wrap{
   position: absolute;
   top: 14px; right: 14px;
@@ -714,6 +810,14 @@ input{ font-family: inherit; }
   border-color: var(--brass);
   color: var(--brass-bright);
 }
+.suspect-btn.is-vote-confirmed{
+  animation: vote-shake .35s ease;
+}
+@keyframes vote-shake{
+  0%, 100%{ transform: translateX(0) scale(1); }
+  25%{ transform: translateX(-3px) scale(1.02); }
+  75%{ transform: translateX(3px) scale(1.02); }
+}
 
 /* ---------- Result screen ---------- */
 .result {
@@ -757,6 +861,14 @@ input{ font-family: inherit; }
 .result__word{ font-size: 26px; font-weight: 800; color: var(--brass-bright); }
 .result__word-card--spy{ margin-top: -12px; }
 .result__word--spy{ color: var(--alert-bright); font-size: 20px; }
+
+.result__flavor{
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-faint);
+  margin: 14px 0 0;
+  max-width: 320px;
+}
 
 .result__section{ width: 100%; margin-bottom: 22px; text-align: left; }
 .result__section h3{
@@ -919,13 +1031,6 @@ input{ font-family: inherit; }
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-
-/* ---------- Vibration flash for role reveal ---------- */
-@keyframes flash-border{
-  0%{ box-shadow: 0 0 0 0 rgba(201,162,39,.5); }
-  100%{ box-shadow: 0 0 0 14px rgba(201,162,39,0); }
-}
-.dossier.is-flashing{ animation: dossier-in .45s cubic-bezier(.2,.9,.3,1.2) both, flash-border .6s ease-out; }
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce){

@@ -122,11 +122,11 @@ variabili.
 secret-agent/
 ├── index.html          Tutte le schermate dell'app (SPA a sezioni)
 ├── manifest.json        Configurazione PWA (nome, icone, colori, standalone)
-├── sw.js                Service worker: cache offline dell'app shell (v4)
+├── sw.js                Service worker: cache offline dell'app shell (v6)
 ├── css/
 │   └── style.css        Design system, temi colore, stili di tutte le schermate
 ├── js/
-│   ├── words.js          Database coppie di parole (16 categorie, 462 coppie)
+│   ├── words.js          Database coppie di parole (25 categorie, 750 coppie)
 │   └── app.js            Stato di gioco, navigazione, timer, voti, statistiche, temi
 └── icons/
     ├── icon-192.png       Lente d'ingrandimento con punto interrogativo
@@ -153,7 +153,7 @@ piccolo hosting, anche gratuito e senza registrazione:
    worker mette in cache tutto al primo avvio.
 
 Se avevi già installato la versione precedente: apri di nuovo l'app con
-connessione attiva almeno una volta, il service worker aggiornato (v2)
+connessione attiva almeno una volta, il service worker aggiornato
 sostituirà automaticamente i file vecchi in cache.
 
 In alternativa vanno bene anche GitHub Pages o qualunque altro hosting
@@ -166,10 +166,12 @@ L'infiltrato non riceve "nessuna parola": riceve una **parola simile ma
 diversa** da quella dei civili (es. civili: *Pane* → infiltrato: *Impasto*),
 così può bluffare con indizi plausibili senza conoscere la parola esatta.
 
-`js/words.js` contiene `WORD_PAIRS`: **462 coppie** su **16 categorie** —
+`js/words.js` contiene `WORD_PAIRS`: **750 coppie** su **25 categorie** —
 Cibo, Animali, Film, Oggetti, Luoghi, Sport, Tecnologia, Professioni, Natura,
-Musica, Trasporti, Scienza, Vestiti, Corpo Umano, Feste, Scuola. Le categorie
-si possono filtrare nel setup; se nessuna è selezionata, si pesca da tutte.
+Musica, Trasporti, Scienza, Vestiti, Corpo Umano, Feste, Scuola, Colori,
+Emozioni, Materiali, Spazio, Fantasia, Giochi, Bevande, Geografia, Casa. Le
+categorie si possono filtrare nel setup; se nessuna è selezionata, si pesca
+da tutte.
 
 ## 8. Changelog
 
@@ -201,3 +203,45 @@ si possono filtrare nel setup; se nessuna è selezionata, si pesca da tutte.
 - **Aggiunto un vero tema chiaro** ("Chiaro" nella schermata Tema): a
   differenza degli altri accenti, cambia anche sfondo e superfici, non solo
   il colore. Il tema scuro resta quello di default.
+- **Selezione multipla categorie resa a prova di dubbio**: `getRandomPair`
+  ora unisce in un unico mazzo tutte le coppie di tutte le categorie
+  selezionate e ne estrae una a caso da lì, invece di scegliere prima la
+  categoria e poi la parola — stesso risultato ma zero ambiguità, verificato
+  con migliaia di estrazioni simulate. Aggiunto anche un contatore live
+  ("N categorie selezionate · N parole nel mazzo") e i pulsanti rapidi
+  "Seleziona tutte" / "Nessuna" nella schermata di setup, per avere sempre
+  sott'occhio cosa è davvero selezionato.
+- **Anti-ripetizione**: la stessa coppia di parole non può ripresentarsi
+  nelle 6 partite immediatamente successive (quando il mazzo selezionato è
+  abbastanza grande da permetterlo), utile rigiocando più volte di fila con
+  poche categorie attive.
+- **Reveal ruolo a "press & hold"**: il ruolo non si vede più con un tap che
+  resta aperto finché non lo chiudi tu — ora si vede *solo* mentre tieni il
+  dito premuto sulla card, e sparisce all'istante al rilascio. Un pulsante
+  separato ("Ho visto, passa al prossimo") si abilita solo dopo la prima
+  occhiata e fa avanzare al giocatore successivo. Funziona con dito, mouse e
+  pennino (Pointer Events) ed è accessibile anche da tastiera (Invio/Spazio
+  tenuti premuti). Il gameplay non cambia: cambia solo *come* si guarda la
+  propria carta.
+- **Feedback aptico differenziato**: vibrazione doppia e decisa quando scopri
+  di essere l'infiltrato, leggera per tutti gli altri ruoli; piccolo impulso
+  ad ogni secondo negli ultimi 5 secondi del timer di discussione; tocco
+  leggero su tutti i pulsanti principali. Nessun errore sui dispositivi che
+  non supportano la vibrazione (fallback silenzioso).
+- **Audio sintetico opzionale**: piccoli suoni generati al volo con la Web
+  Audio API (nessun file esterno) per click, conferme, voto e reveal —
+  tono cupo per l'infiltrato, tono chiaro per gli altri ruoli, bip ritmico
+  negli ultimi secondi del timer. Interruttore "Effetti sonori" nella
+  schermata Tema, ricordato tra una partita e l'altra.
+- **Memoria dei giocatori**: l'ultimo elenco di nomi usato viene salvato in
+  automatico; il pulsante "Ricarica ultimi giocatori" nella schermata di
+  setup lo ripristina in un tocco, utile quando si gioca spesso con lo
+  stesso gruppo.
+- **Micro-animazioni**: piccolo effetto flip sul dossier tra stato nascosto
+  e rivelato, leggero shake di conferma sul voto appena espresso — tutto
+  rispetta `prefers-reduced-motion` come il resto dell'app.
+- **Easter egg discreto**: nella schermata finale compare una piccola
+  didascalia ironica scelta a caso, basata solo sul fatto verificato (chi è
+  stato eliminato) e non su un verdetto complessivo sulla partita — resta
+  quindi corretta anche con più infiltrati, coerentemente con la scelta di
+  aver tolto il verdetto automatico.

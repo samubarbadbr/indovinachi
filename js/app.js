@@ -20,6 +20,8 @@
 
   const STORAGE_KEY = 'secretAgent.stats.v1';
   const SETTINGS_KEY = 'secretAgent.settings.v1';
+  const PLAYERS_KEY = 'secretAgent.lastPlayers.v1';
+  const FINAL_COUNTDOWN_SECONDS = 5; // soglia per l'impulso aptico + bip finali del timer
 
   /* ---------------- Utility ---------------- */
 
@@ -30,6 +32,88 @@
     if (navigator.vibrate) {
       try { navigator.vibrate(pattern); } catch (e) { /* ignora */ }
     }
+  }
+
+  /* ---------------- Audio sintetico (Web Audio API) ----------------
+     Nessun file audio esterno: tutti gli effetti sono generati al volo
+     con oscillatori. L'AudioContext viene creato solo al primo gesto
+     dell'utente (i browser lo richiedono) e riutilizzato in seguito. */
+
+  const AUDIO_KEY = 'secretAgent.audioEnabled.v1';
+  let audioCtx = null;
+  let audioEnabled = true;
+
+  function loadAudioSetting() {
+    try {
+      const raw = localStorage.getItem(AUDIO_KEY);
+      audioEnabled = raw === null ? true : raw === 'true';
+    } catch (e) { audioEnabled = true; }
+    const toggle = $('#audioToggle');
+    if (toggle) toggle.checked = audioEnabled;
+  }
+
+  function saveAudioSetting() {
+    try { localStorage.setItem(AUDIO_KEY, String(audioEnabled)); } catch (e) { /* non disponibile */ }
+  }
+
+  function getAudioContext() {
+    if (!audioEnabled) return null;
+    if (!audioCtx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return null; // browser senza supporto: nessun suono, nessun errore
+      try { audioCtx = new AudioCtx(); } catch (e) { return null; }
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+    return audioCtx;
+  }
+
+  // Riproduce un singolo tono con un breve inviluppo (attacco/decadimento)
+  // per evitare click sgradevoli in apertura/chiusura del suono.
+  function playTone({ freq = 440, duration = 0.12, type = 'sine', volume = 0.12, delay = 0 } = {}) {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+      gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+      gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + delay + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + duration + 0.02);
+    } catch (e) { /* mai bloccare l'app per un suono */ }
+  }
+
+  // Click leggero sui pulsanti principali
+  function playClick() {
+    playTone({ freq: 720, duration: 0.05, type: 'square', volume: 0.05 });
+  }
+
+  // Conferma (due note ascendenti) — usata per voti, conferme, avanzamenti
+  function playConfirm() {
+    playTone({ freq: 520, duration: 0.09, type: 'sine', volume: 0.09 });
+    playTone({ freq: 780, duration: 0.11, type: 'sine', volume: 0.09, delay: 0.06 });
+  }
+
+  // Tono cupo per il reveal dell'infiltrato: bassa frequenza, timbro grave
+  function playSpyReveal() {
+    playTone({ freq: 110, duration: 0.5, type: 'sawtooth', volume: 0.1 });
+    playTone({ freq: 82, duration: 0.6, type: 'sine', volume: 0.12, delay: 0.05 });
+  }
+
+  // Tono chiaro per il reveal di un ruolo non infiltrato (civile/jolly)
+  function playCivilianReveal() {
+    playTone({ freq: 660, duration: 0.16, type: 'sine', volume: 0.08 });
+  }
+
+  // Bip ritmico per gli ultimi secondi del timer di discussione
+  function playCountdownBeep() {
+    playTone({ freq: 880, duration: 0.09, type: 'square', volume: 0.07 });
   }
 
   let toastTimer = null;
@@ -91,9 +175,40 @@
       input.addEventListener('input', (e) => {
         const idx = Number(e.target.dataset.idx);
         state.players[idx] = e.target.value.trim() || `Giocatore ${idx + 1}`;
+        saveLastPlayers();
       });
     });
   }
+
+  // Memorizza automaticamente l'ultimo elenco giocatori, per poterlo
+  // ricaricare all'inizio della prossima partita senza doverlo riscrivere.
+  function saveLastPlayers() {
+    try { localStorage.setItem(PLAYERS_KEY, JSON.stringify(state.players)); }
+    catch (e) { /* storage non disponibile: nessun problema, si può giocare comunque */ }
+  }
+
+  function loadLastPlayers() {
+    try {
+      const raw = localStorage.getItem(PLAYERS_KEY);
+      const list = raw ? JSON.parse(raw) : null;
+      return (Array.isArray(list) && list.length >= 3) ? list : null;
+    } catch (e) { return null; }
+  }
+
+  $('#reloadPlayersBtn').addEventListener('click', () => {
+    const saved = loadLastPlayers();
+    if (!saved) { showToast('Nessuna partita precedente salvata'); return; }
+    state.numPlayers = clamp(saved.length, 3, 20);
+    state.players = saved.slice(0, state.numPlayers);
+    while (state.players.length < state.numPlayers) {
+      state.players.push(`Giocatore ${state.players.length + 1}`);
+    }
+    $('#playersValue').textContent = state.numPlayers;
+    $('#playersSlider').value = state.numPlayers;
+    renderNamesList();
+    syncSpiesConstraints();
+    showToast('Giocatori ricaricati');
+  });
 
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, m => ({
@@ -105,6 +220,7 @@
     state.numPlayers = clamp(n, 3, 20);
     ensurePlayersUI();
     syncSpiesConstraints();
+    saveLastPlayers();
   }
 
   $('#playersMinus').addEventListener('click', () => setPlayers(state.numPlayers - 1));
@@ -151,10 +267,34 @@
         const i = state.selectedCategories.indexOf(cat);
         if (i >= 0) { state.selectedCategories.splice(i, 1); chip.classList.remove('is-selected'); }
         else { state.selectedCategories.push(cat); chip.classList.add('is-selected'); }
+        updateCategoryCount();
       });
       container.appendChild(chip);
     });
+    updateCategoryCount();
   }
+
+  // Mostra quante categorie sono selezionate e quante parole ne derivano,
+  // così è subito visibile che la selezione multipla funziona davvero.
+  function updateCategoryCount() {
+    const allCats = Object.keys(WORD_PAIRS);
+    const activeCats = state.selectedCategories.length ? state.selectedCategories : allCats;
+    const totalPairs = activeCats.reduce((sum, cat) => sum + (WORD_PAIRS[cat]?.length || 0), 0);
+    const label = state.selectedCategories.length
+      ? `${activeCats.length} categorie selezionate · ${totalPairs} parole nel mazzo`
+      : `${allCats.length} categorie disponibili · ${totalPairs} parole nel mazzo`;
+    $('#categoryCount').textContent = label;
+  }
+
+  $('#selectAllCategoriesBtn').addEventListener('click', () => {
+    state.selectedCategories = Object.keys(WORD_PAIRS);
+    renderCategoryChips();
+  });
+
+  $('#clearCategoriesBtn').addEventListener('click', () => {
+    state.selectedCategories = [];
+    renderCategoryChips();
+  });
 
   /* ---------------- FASE 3: timer ---------------- */
 
@@ -190,8 +330,31 @@
     return a;
   }
 
+  // Tiene traccia delle ultime coppie uscite per evitare ripetizioni immediate
+  // quando si rigioca più volte di fila (utile soprattutto con poche categorie
+  // selezionate, dove altrimenti la stessa parola potrebbe ripresentarsi subito).
+  const recentPairsHistory = [];
+  const MAX_HISTORY = 6;
+
+  function pickPairAvoidingRepeats() {
+    let attempt = getRandomPair(state.selectedCategories);
+    let tries = 0;
+    // Ritenta finché non trova una coppia non recente, con un tetto di
+    // tentativi per non entrare in loop quando il mazzo disponibile è piccolo.
+    while (
+      recentPairsHistory.some(p => p.civil === attempt.civil && p.category === attempt.category) &&
+      tries < 12
+    ) {
+      attempt = getRandomPair(state.selectedCategories);
+      tries++;
+    }
+    recentPairsHistory.push(attempt);
+    if (recentPairsHistory.length > MAX_HISTORY) recentPairsHistory.shift();
+    return attempt;
+  }
+
   function startNewGame() {
-    const picked = getRandomPair(state.selectedCategories);
+    const picked = pickPairAvoidingRepeats();
     const order = shuffle(state.players.map((name, i) => i));
 
     const roles = new Array(state.players.length).fill('civilian');
@@ -225,35 +388,34 @@
 
   /* ---------------- FASE 2 (schermata): distribuzione ruoli ---------------- */
 
+  // Il contenuto del dossier viene preparato per il giocatore corrente ma
+  // resta nascosto via CSS finché non si tiene premuto: così la copertura
+  // al rilascio è istantanea, senza dover ricalcolare nulla.
+  let hasRevealedCurrentPlayer = false;
+
   function beginReveal() {
     state.game.revealIndex = 0;
-    $('#passCard').style.display = 'flex';
-    $('#roleCard').style.display = 'none';
+    $('#revealSingle').style.display = 'flex';
     $('#revealFooter').style.display = 'none';
-    updatePassCard();
+    prepareDossierForCurrentPlayer();
   }
 
-  function updatePassCard() {
+  function prepareDossierForCurrentPlayer() {
     const g = state.game;
     const player = g.roles[g.revealIndex];
+
     $('#passIndex').textContent = `Agente ${g.revealIndex + 1} di ${g.roles.length}`;
     $('#passName').textContent = player.name;
-  }
 
-  $('#revealBtn').addEventListener('click', () => {
-    const g = state.game;
-    const player = g.roles[g.revealIndex];
     const label = $('#roleLabel');
     const word = $('#roleWord');
     const note = $('#roleNote');
-    const wordEl = $('#roleWord');
-
-    wordEl.classList.remove('is-spy');
+    word.classList.remove('is-spy');
 
     if (player.role === 'spy') {
       label.textContent = 'INFILTRATO';
       word.textContent = g.undercoverWord;
-      wordEl.classList.add('is-spy');
+      word.classList.add('is-spy');
       note.textContent = "Sei l'infiltrato: la tua parola è simile a quella vera ma non identica. Usala per bluffare senza farti scoprire.";
     } else if (player.role === 'jolly') {
       label.textContent = `CATEGORIA: ${g.category.toUpperCase()}`;
@@ -265,23 +427,67 @@
       note.textContent = "Descrivi la parola con un indizio, senza mai dirla. Trova l'infiltrato.";
     }
 
-    $('#passCard').style.display = 'none';
-    $('#roleCard').style.display = 'flex';
-    vibrate(60);
+    hasRevealedCurrentPlayer = false;
+    $('#confirmSeenBtn').disabled = true;
+    $('#dossier').classList.remove('is-revealed');
+    $('#dossier').setAttribute('aria-pressed', 'false');
+  }
+
+  // Mostra il ruolo (chiamato da pointerdown e dalla tastiera). Il feedback
+  // aptico/sonoro è differenziato: doppio impulso deciso + tono cupo per
+  // l'infiltrato, impulso leggero + tono chiaro per tutti gli altri ruoli.
+  function revealDossier() {
     const dossier = $('#dossier');
-    dossier.classList.remove('is-flashing');
-    void dossier.offsetWidth; // riavvia l'animazione
-    dossier.classList.add('is-flashing');
+    if (dossier.classList.contains('is-revealed')) return; // già visibile
+    dossier.classList.add('is-revealed');
+    dossier.setAttribute('aria-pressed', 'true');
+
+    const g = state.game;
+    const player = g.roles[g.revealIndex];
+    if (player.role === 'spy') {
+      vibrate([40, 40, 40]); // doppia vibrazione intensa: sei l'infiltrato
+      playSpyReveal();
+    } else {
+      vibrate(25);
+      playCivilianReveal();
+    }
+
+    if (!hasRevealedCurrentPlayer) {
+      hasRevealedCurrentPlayer = true;
+      $('#confirmSeenBtn').disabled = false;
+    }
+  }
+
+  function hideDossier() {
+    const dossier = $('#dossier');
+    dossier.classList.remove('is-revealed');
+    dossier.setAttribute('aria-pressed', 'false');
+  }
+
+  const dossierEl = $('#dossier');
+  // Pointer Events coprono touch, mouse e pen con un'unica API.
+  dossierEl.addEventListener('pointerdown', (e) => { e.preventDefault(); revealDossier(); });
+  dossierEl.addEventListener('pointerup', hideDossier);
+  dossierEl.addEventListener('pointercancel', hideDossier);
+  dossierEl.addEventListener('pointerleave', hideDossier);
+  // Accessibilità da tastiera: Invio/Spazio mostrano il ruolo finché premuti
+  dossierEl.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
+      e.preventDefault();
+      revealDossier();
+    }
+  });
+  dossierEl.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') hideDossier();
   });
 
-  $('#hideRoleBtn').addEventListener('click', () => {
+  $('#confirmSeenBtn').addEventListener('click', () => {
     const g = state.game;
     g.revealIndex++;
-    $('#roleCard').style.display = 'none';
     if (g.revealIndex < g.roles.length) {
-      $('#passCard').style.display = 'flex';
-      updatePassCard();
+      prepareDossierForCurrentPlayer();
     } else {
+      $('#revealSingle').style.display = 'none';
       $('#revealFooter').style.display = 'flex';
     }
   });
@@ -366,6 +572,12 @@
           showToast('Tempo scaduto!');
           return;
         }
+        // Ultimi secondi: piccolo impulso + bip ad ogni tick, per sentire
+        // che il tempo sta per scadere anche senza guardare lo schermo.
+        if (g.timer.remaining <= FINAL_COUNTDOWN_SECONDS) {
+          vibrate(15);
+          playCountdownBeep();
+        }
         updateTimerDisplay();
       }, 1000);
     }
@@ -415,10 +627,11 @@
     if (voteLock) return;
     voteLock = true;
     const g = state.game;
-    $$('.suspect-btn', $('#suspectGrid')).forEach(b => b.classList.remove('is-picked'));
-    btnEl.classList.add('is-picked');
+    $$('.suspect-btn', $('#suspectGrid')).forEach(b => b.classList.remove('is-picked', 'is-vote-confirmed'));
+    btnEl.classList.add('is-picked', 'is-vote-confirmed');
     g.votes[suspectName] = (g.votes[suspectName] || 0) + 1;
     vibrate(30);
+    playConfirm();
 
     setTimeout(() => {
       g.voterIndex++;
@@ -451,11 +664,42 @@
     launchConfetti();
   }
 
+  // Frasi ironiche puramente decorative: descrivono solo il fatto verificato
+  // (chi è stato eliminato), non un verdetto sull'intera partita — così
+  // restano corrette anche con più infiltrati in gioco.
+  const FLAVOR_SPY_CAUGHT = [
+    'Copertura saltata. L\'infiltrato può togliersi il trench.',
+    'Smascherato. Il satellite registra un altro successo.',
+    'Beccato con le mani nel dossier sbagliato.',
+    'La sua parola "simile" non era poi così simile.',
+    'Missione compromessa per l\'infiltrato. Si torna in centrale.'
+  ];
+  const FLAVOR_INNOCENT_ELIMINATED = [
+    'Un civile innocente finisce nel fascicolo per errore.',
+    'L\'infiltrato ringrazia e resta in incognito.',
+    'Indagine indirizzata male: il vero bersaglio se la ride.',
+    'Voto sbagliato: l\'infiltrato guadagna un altro giro.',
+    'Il vero sospettato osserva tutto da un angolo, tranquillo.'
+  ];
+  const FLAVOR_NO_ELIMINATION = [
+    'Nessun accordo sul sospettato: il fascicolo resta aperto.',
+    'Voti troppo divisi per un verdetto.'
+  ];
+
+  function pickFlavorCaption(eliminated) {
+    let pool;
+    if (!eliminated) pool = FLAVOR_NO_ELIMINATION;
+    else if (eliminated.role === 'spy') pool = FLAVOR_SPY_CAUGHT;
+    else pool = FLAVOR_INNOCENT_ELIMINATED;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
   function renderResult(eliminated) {
     const g = state.game;
 
     $('#resultWord').textContent = g.word;
     $('#resultUndercoverWord').textContent = g.undercoverWord;
+    $('#resultFlavor').textContent = pickFlavorCaption(eliminated);
 
     // tabellone voti, ordinato per numero di voti decrescente
     const tally = $('#voteTally');
@@ -598,8 +842,30 @@
       e.preventDefault(); // Blocca lo zoom se si usano più dita contemporaneamente
     }
   }, { passive: false });
+  /* ---------------- Feedback su pulsanti principali ----------------
+     Click sonoro leggero + vibrazione leggera su tutti i controlli
+     interattivi principali. Il voto e il reveal del ruolo hanno un
+     feedback dedicato più marcato, quindi sono esclusi da qui per
+     evitare di sovrapporre due suoni sullo stesso tocco. */
+  document.addEventListener('click', (e) => {
+    const control = e.target.closest(
+      '.btn, .iconbtn, .counter__btn, .chip, .theme-swatch, .link-btn'
+    );
+    if (!control || control.disabled) return;
+    if (control.closest('#suspectGrid')) return; // il voto ha già il suo feedback
+    playClick();
+    vibrate(8);
+  });
+
+  $('#audioToggle').addEventListener('change', (e) => {
+    audioEnabled = e.target.checked;
+    saveAudioSetting();
+    if (audioEnabled) playConfirm(); // piccola conferma udibile riattivando l'audio
+  });
+
   /* ---------------- Inizializzazione ---------------- */
 
+  loadAudioSetting();
   loadTheme();
   ensurePlayersUI();
   syncSpiesConstraints();

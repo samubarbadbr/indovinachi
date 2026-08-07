@@ -74,6 +74,10 @@
       <input type="range" id="playersSlider" min="3" max="20" value="6" step="1" class="slider">
       <div class="slider__scale"><span>3</span><span>20</span></div>
 
+      <div class="category-actions">
+        <button type="button" class="link-btn" id="reloadPlayersBtn">Ricarica ultimi giocatori</button>
+      </div>
+
       <div class="names-list" id="namesList"></div>
     </div>
 
@@ -116,7 +120,15 @@
 
       <h2 class="section-title section-title--mt">Categorie</h2>
       <p class="section-desc">Scegli da quali categorie pescare la parola segreta. Nessuna selezione = tutte.</p>
+
+      <div class="category-actions">
+        <button type="button" class="link-btn" id="selectAllCategoriesBtn">Seleziona tutte</button>
+        <button type="button" class="link-btn" id="clearCategoriesBtn">Nessuna</button>
+      </div>
+
       <div class="chip-grid" id="categoryChips"></div>
+
+      <p class="category-count" id="categoryCount">25 categorie disponibili · 750 parole nel mazzo</p>
     </div>
 
     <div class="screen__footer">
@@ -160,22 +172,34 @@
   <!-- ============ DISTRIBUZIONE RUOLI ============ -->
   <section class="screen screen--dark" data-screen="reveal">
     <div class="reveal">
-      <div class="reveal__pass" id="passCard">
+      <div class="reveal__single" id="revealSingle">
         <div class="pass__index" id="passIndex">Agente 1 di 6</div>
-        <h2 class="pass__title">Passa il telefono a</h2>
+        <h2 class="pass__title">Tieni premuto per vedere il ruolo di</h2>
         <div class="pass__name" id="passName">Giocatore 1</div>
-        <p class="pass__warn">Assicurati che gli altri non guardino lo schermo.</p>
-        <button class="btn btn--primary btn--wide" id="revealBtn">Tocca per vedere il ruolo</button>
-      </div>
 
-      <div class="reveal__card" id="roleCard">
-        <div class="dossier" id="dossier">
-          <div class="dossier__stamp-wrap"><div class="dossier__stamp" id="dossierStamp">TOP SECRET</div></div>
-          <div class="dossier__label" id="roleLabel">CIVILE</div>
-          <div class="dossier__word" id="roleWord">PIZZA</div>
-          <div class="dossier__note" id="roleNote">Descrivi la parola senza dirla. Trova l'infiltrato.</div>
+        <div class="dossier dossier--holdable"
+             id="dossier"
+             tabindex="0"
+             role="button"
+             aria-pressed="false"
+             aria-label="Tieni premuto per vedere il tuo ruolo">
+          <div class="dossier__hidden-state" id="dossierHiddenState">
+            <svg viewBox="0 0 24 24" class="dossier__hidden-icon" aria-hidden="true">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+            </svg>
+            <span>TIENI PREMUTO PER VEDERE</span>
+          </div>
+          <div class="dossier__content" id="dossierContent">
+            <div class="dossier__stamp-wrap"><div class="dossier__stamp" id="dossierStamp">TOP SECRET</div></div>
+            <div class="dossier__label" id="roleLabel">CIVILE</div>
+            <div class="dossier__word" id="roleWord">PIZZA</div>
+            <div class="dossier__note" id="roleNote">Descrivi la parola senza dirla. Trova l'infiltrato.</div>
+          </div>
         </div>
-        <button class="btn btn--secondary btn--wide" id="hideRoleBtn">Ho memorizzato, nascondi</button>
+
+        <p class="pass__warn">Assicurati che gli altri non guardino lo schermo. Rilasciando il dito il ruolo si nasconde subito.</p>
+        <button class="btn btn--primary btn--wide" id="confirmSeenBtn" disabled>Ho visto, passa al prossimo</button>
       </div>
     </div>
 
@@ -251,6 +275,8 @@
         <span class="result__word-label">La parola dell'infiltrato era</span>
         <span class="result__word result__word--spy" id="resultUndercoverWord">FOCACCIA</span>
       </div>
+
+      <p class="result__flavor" id="resultFlavor"></p>
 
       <div class="result__section">
         <h3>Voti ricevuti</h3>
@@ -410,6 +436,18 @@
           <span class="theme-swatch__dot theme-swatch__dot--light"></span>
           <span>Chiaro</span>
         </button>
+      </div>
+
+      <h2 class="section-title section-title--mt">Audio</h2>
+      <div class="toggle-row">
+        <div class="toggle-row__text">
+          <strong>Effetti sonori</strong>
+          <span>Piccoli suoni sintetici per tocchi, conferme e rivelazioni. Nessun file audio, generati al volo.</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="audioToggle" checked>
+          <span class="switch__track"><span class="switch__thumb"></span></span>
+        </label>
       </div>
     </div>
   </section>

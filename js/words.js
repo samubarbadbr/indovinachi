@@ -30,14 +30,24 @@ const WORD_PAIRS = {
   'Casa': [{ civil: 'Cucina', undercover: 'Sala Da Pranzo' }, { civil: 'Camera Da Letto', undercover: 'Cameretta' }, { civil: 'Bagno', undercover: 'Lavanderia' }, { civil: 'Salotto', undercover: 'Soggiorno' }, { civil: 'Balcone', undercover: 'Terrazzo' }, { civil: 'Cantina', undercover: 'Soffitta' }, { civil: 'Garage', undercover: 'Ripostiglio' }, { civil: 'Corridoio', undercover: 'Ingresso' }, { civil: 'Studio', undercover: 'Ufficio Di Casa' }, { civil: 'Divano Letto', undercover: 'Poltrona Letto' }, { civil: 'Armadio A Muro', undercover: 'Cabina Armadio' }, { civil: 'Scaffale', undercover: 'Libreria' }, { civil: 'Tenda', undercover: 'Tapparella' }, { civil: 'Lampadario', undercover: 'Applique' }, { civil: 'Tappeto', undercover: 'Zerbino' }, { civil: 'Camino', undercover: 'Stufa A Legna' }, { civil: 'Veranda', undercover: 'Portico' }, { civil: 'Cortile', undercover: 'Giardino Interno' }, { civil: 'Soffitto', undercover: 'Controsoffitto' }, { civil: 'Pavimento', undercover: 'Parquet' }, { civil: 'Parete', undercover: 'Muro Portante' }, { civil: 'Finestra', undercover: 'Lucernario' }, { civil: 'Porta Blindata', undercover: 'Porta Scorrevole' }, { civil: 'Citofono', undercover: 'Videocitofono' }, { civil: 'Presa Elettrica', undercover: 'Interruttore' }, { civil: 'Termosifone', undercover: 'Pavimento Riscaldato' }, { civil: 'Mansarda', undercover: 'Attico' }, { civil: 'Cassetto', undercover: 'Comodino' }, { civil: 'Scala Interna', undercover: 'Ascensore' }, { civil: 'Vialetto', undercover: 'Cancello D\'Ingresso' }],
 };
 
-// Estrae una coppia casuale dalle categorie selezionate (vuoto = tutte)
+// Estrae una coppia casuale dalle categorie selezionate (vuoto = tutte).
+// Se sono selezionate più categorie, tutte le loro coppie vengono unite
+// in un unico "mazzo" e mescolate insieme: ogni coppia di ogni categoria
+// selezionata ha la stessa probabilità di essere estratta.
 function getRandomPair(selectedCategories) {
   const cats = (selectedCategories && selectedCategories.length > 0)
     ? selectedCategories.filter(c => WORD_PAIRS[c])
     : Object.keys(WORD_PAIRS);
-  const pool = cats.length > 0 ? cats : Object.keys(WORD_PAIRS);
-  const category = pool[Math.floor(Math.random() * pool.length)];
-  const list = WORD_PAIRS[category];
-  const pair = list[Math.floor(Math.random() * list.length)];
-  return { category, civil: pair.civil, undercover: pair.undercover };
+  const activeCats = cats.length > 0 ? cats : Object.keys(WORD_PAIRS);
+
+  // Mazzo unico con TUTTE le coppie di TUTTE le categorie selezionate
+  const deck = [];
+  activeCats.forEach(category => {
+    WORD_PAIRS[category].forEach(pair => {
+      deck.push({ category, civil: pair.civil, undercover: pair.undercover });
+    });
+  });
+
+  const randomIndex = Math.floor(Math.random() * deck.length);
+  return deck[randomIndex];
 }
