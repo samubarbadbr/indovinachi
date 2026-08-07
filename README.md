@@ -122,7 +122,7 @@ variabili.
 secret-agent/
 ├── index.html          Tutte le schermate dell'app (SPA a sezioni)
 ├── manifest.json        Configurazione PWA (nome, icone, colori, standalone)
-├── sw.js                Service worker: cache offline dell'app shell (v6)
+├── sw.js                Service worker: cache offline dell'app shell (v7)
 ├── css/
 │   └── style.css        Design system, temi colore, stili di tutte le schermate
 ├── js/
@@ -229,8 +229,10 @@ da tutte.
   leggero su tutti i pulsanti principali. Nessun errore sui dispositivi che
   non supportano la vibrazione (fallback silenzioso).
 - **Audio sintetico opzionale**: piccoli suoni generati al volo con la Web
-  Audio API (nessun file esterno) per click, conferme, voto e reveal —
-  tono cupo per l'infiltrato, tono chiaro per gli altri ruoli, bip ritmico
+  Audio API (nessun file esterno) per click, conferme, voto e reveal — il
+  suono del reveal è **volutamente identico per ogni ruolo** (il telefono
+  passa di mano tra persone vicine: un suono diverso per l'infiltrato
+  sarebbe udibile da chi sta accanto e lo tradirebbe subito), bip ritmico
   negli ultimi secondi del timer. Interruttore "Effetti sonori" nella
   schermata Tema, ricordato tra una partita e l'altra.
 - **Memoria dei giocatori**: l'ultimo elenco di nomi usato viene salvato in
@@ -245,3 +247,9 @@ da tutte.
   stato eliminato) e non su un verdetto complessivo sulla partita — resta
   quindi corretta anche con più infiltrati, coerentemente con la scelta di
   aver tolto il verdetto automatico.
+- **Fix privacy audio**: il suono del reveal era inizialmente diverso per
+  l'infiltrato (tono cupo) rispetto agli altri ruoli (tono chiaro) — un
+  bystander vicino al giocatore avrebbe potuto riconoscere l'infiltrato
+  solo dal suono, senza nemmeno vedere lo schermo. Ora il suono è identico
+  per tutti i ruoli; resta invece differenziata solo la vibrazione, che è
+  privata e la sente esclusivamente chi tiene il telefono in mano.

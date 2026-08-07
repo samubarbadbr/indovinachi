@@ -100,15 +100,13 @@
     playTone({ freq: 780, duration: 0.11, type: 'sine', volume: 0.09, delay: 0.06 });
   }
 
-  // Tono cupo per il reveal dell'infiltrato: bassa frequenza, timbro grave
-  function playSpyReveal() {
-    playTone({ freq: 110, duration: 0.5, type: 'sawtooth', volume: 0.1 });
-    playTone({ freq: 82, duration: 0.6, type: 'sine', volume: 0.12, delay: 0.05 });
-  }
-
-  // Tono chiaro per il reveal di un ruolo non infiltrato (civile/jolly)
-  function playCivilianReveal() {
-    playTone({ freq: 660, duration: 0.16, type: 'sine', volume: 0.08 });
+  // Suono del reveal: VOLUTAMENTE identico per ogni ruolo. Il telefono
+  // passa di mano in mano tra persone vicine tra loro: un suono diverso
+  // per l'infiltrato sarebbe udibile da chi sta accanto e lo tradirebbe
+  // subito. La vibrazione, invece, resta differenziata perché la sente
+  // solo chi tiene il telefono in mano.
+  function playRoleReveal() {
+    playTone({ freq: 480, duration: 0.14, type: 'sine', volume: 0.08 });
   }
 
   // Bip ritmico per gli ultimi secondi del timer di discussione
@@ -444,13 +442,15 @@
 
     const g = state.game;
     const player = g.roles[g.revealIndex];
+    // La vibrazione è privata (la sente solo chi tiene il telefono in
+    // mano) e può restare differenziata; il suono invece è udibile da chi
+    // sta vicino, quindi è sempre lo stesso per ogni ruolo — vedi playRoleReveal().
     if (player.role === 'spy') {
       vibrate([40, 40, 40]); // doppia vibrazione intensa: sei l'infiltrato
-      playSpyReveal();
     } else {
       vibrate(25);
-      playCivilianReveal();
     }
+    playRoleReveal();
 
     if (!hasRevealedCurrentPlayer) {
       hasRevealedCurrentPlayer = true;
